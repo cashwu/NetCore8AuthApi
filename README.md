@@ -5,16 +5,15 @@
 - add EF Core package
 
 ```shell
-dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore -v 8.0.0-preview.7.23375.9
-dotnet add package Microsoft.EntityFrameworkCore.Design -v 8.0.0-preview.7.23375.4
-dotnet add package Microsoft.EntityFrameworkCore.Sqlite -v 8.0.0-preview.7.23375.4
+dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore --prerelease
+dotnet add package Microsoft.EntityFrameworkCore.Design --prerelease
+dotnet add package Microsoft.EntityFrameworkCore.Sqlite --prerelease
 ```
 
-- add Authentication 
+- add Authorization 
 
 ```csharp
-builder.Services.AddAuthentication().AddBearerToken(IdentityConstants.BearerScheme);
-builder.Services.AddAuthorizationBuilder();
+builder.Services.AddAuthorization;
 ```
 
 - create user class and db context class
@@ -41,15 +40,21 @@ builder.Services.AddDbContext<AppDbContext>(a => a.UseSqlite("DataSource=app.db"
 - add identity service 
 
 ```csharp
-builder.Services.AddIdentityCore<MyUser>()
-       .AddEntityFrameworkStores<AppDbContext>()
-       .AddApiEndpoints();
+builder.Services
+       .AddIdentityApiEndpoints<MyUser>()
+       .AddEntityFrameworkStores<AppDbContext>();
 ```
 
 - add identity api
 
 ```csharp
 app.MapIdentityApi<MyUser>();
+```
+
+- add Authorization middleware
+
+```csharp
+app.UseAuthorization(); 
 ```
 
 - add test auth api
@@ -59,11 +64,10 @@ app.MapGet("/user", (ClaimsPrincipal user) => $"Hello {user.Identity?.Name}")
    .RequireAuthorization();
 ```
 
-
 - update ef tool
 
 ```shell
-dotnet tool update --global dotnet-ef --version 8.0.0-preview.7.23375.4
+dotnet tool update --global dotnet-ef --prerelease
 ```
 
 - ef migration

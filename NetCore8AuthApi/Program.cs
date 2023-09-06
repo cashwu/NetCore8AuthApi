@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +18,7 @@ builder.Services.AddSwaggerGen(options =>
                                       Type = SecuritySchemeType.Http,
                                       Scheme = "Bearer"
                                   });
-    
+
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -36,13 +37,13 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-builder.Services.AddAuthentication().AddBearerToken(IdentityConstants.BearerScheme);
-builder.Services.AddAuthorizationBuilder();
+builder.Services.AddAuthorization();
+
 builder.Services.AddDbContext<AppDbContext>(a => a.UseSqlite("DataSource=app.db"));
 
-builder.Services.AddIdentityCore<MyUser>()
-       .AddEntityFrameworkStores<AppDbContext>()
-       .AddApiEndpoints();
+builder.Services
+       .AddIdentityApiEndpoints<MyUser>()
+       .AddEntityFrameworkStores<AppDbContext>();
 
 var app = builder.Build();
 
@@ -52,8 +53,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseAuthorization();
+
 app.MapIdentityApi<MyUser>();
 app.MapGet("/", () => "OK");
+app.MapGet("/user", (ClaimsPrincipal user) => $"Hello {user.Identity?.Name}")
+   .RequireAuthorization();
 
 app.Run();
 
